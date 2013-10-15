@@ -1,9 +1,7 @@
-<ul>
-    {% for order in orders %}
-        <li>
-            <a href="{{ url_for('show_order', order_id=order.id) }}">
-                Order #{{ order.id }}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
+order #{{ order.id }}:
+<a rel=self href='{{ url_for('show_order', order_id=order.id, _external=True) }}'>
+    {{ order.name }}
+</a>
+<span class=status>
+    {{ order.status }}
+</span>

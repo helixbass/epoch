@@ -1,5 +1,5 @@
-order #{{ order.id }}:
-<a rel=self href='{{ url_for('show_order', order_id=order.id, _external=True) }}'>
+order #{{ order._id }}:
+<a rel=self href='{{ url_for('show_order', order_id=order._id, _external=True) }}'>
     {{ order.name }}
 </a>
 <span class=status>

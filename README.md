@@ -21,6 +21,9 @@ If MongoDB is running somewhere other than `localhost:27017` you can override `M
   1. editing `app.py` directly OR
   2. creating a config file (e.g. `local.cfg`) which sets `MONGODB_HOST`/`MONGODB_PORT` correctly, and then referencing that config file in the environment variable `EPOCH_CONFIG` when you run the app, e.g.:
 
+        $ cat local.cfg
+        MONGODB_HOST = 'mongo.example.com'
+        MONGODB_PORT = 12345
         $ cd epoch
         $ EPOCH_CONFIG=local.cfg ./app.py
 

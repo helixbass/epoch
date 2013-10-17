@@ -2,6 +2,17 @@ Prerequisites
 -------------
 Requires MongoDB to be installed & running
 
+Configuring the app
+-------------------
+
+If MongoDB is running somewhere other than `localhost:27017` you can override `MONGODB_HOST` and/or `MONGODB_PORT` by either:
+  1. editing `app.py` directly OR
+  2. creating a config file (e.g. `local.cfg`) which sets `MONGODB_HOST`/`MONGODB_PORT` correctly, and then referencing that config file in the environment variable `EPOCH_CONFIG` when you run the app, e.g.:
+
+        $ EPOCH_CONFIG=local.cfg ./app.py
+
+You can also similarly override `MONGODB_DATABASE` if you don't want to use the default (`epoch`)
+
 Running the app
 ---------------
 
@@ -26,7 +37,7 @@ Running the tests
 The test suite (in `test_app.py`) uses `py.test`, which should have been installed (into the virtualenv) as a dependency. To run the tests:
 
     $ cd epoch
-    $ py.test
+    $ EPOCH_CONFIG=test.cfg py.test
 
 API endpoints
 -------------

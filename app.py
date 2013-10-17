@@ -1,6 +1,7 @@
 from flask import Flask, url_for, render_template, request, redirect, abort, make_response, json
 from mongokit import Connection, Document, ValidationError as MongoValidationError, RequireFieldError
 from werkzeug.routing import BaseConverter, ValidationError
+from werkzeug import url_decode
 from itsdangerous import base64_encode, base64_decode
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
@@ -25,7 +26,22 @@ class ObjectIDConverter(BaseConverter):
     def to_url(self, value):
         return base64_encode(value.binary)
 
+class MethodRewriteMiddleware(object):
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if 'METHOD_OVERRIDE' in environ.get('QUERY_STRING', ''):
+            args = url_decode(environ['QUERY_STRING'])
+            method = args.get('__METHOD_OVERRIDE__')
+            if method:
+                method = method.encode('ascii', 'replace')
+                environ['REQUEST_METHOD'] = method
+        return self.app(environ, start_response)
+
 app = Flask(__name__)
+app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 app.config.from_object(__name__)
 try:
     app.config.from_envvar('EPOCH_CONFIG')
@@ -79,6 +95,7 @@ class Order(Document):
             'name': basestring,
             'address': address_schema,
             'method': basestring,
+            'email': basestring,
         },
         'items': [{
             'name': basestring,
@@ -93,13 +110,16 @@ class Order(Document):
         'prescription': basestring,
         'created_time': datetime,
         'status': basestring,
+        'shipment': {
+            'tracking_number': basestring,
+        },
     }
     required_fields = ['billing.name', 'billing.address.street', 'billing.address.city',
                        'billing.address.state', 'billing.address.zip',
                        'billing.ccinfo.type', 'billing.ccinfo.number', 'billing.ccinfo.expires',
                        'shipping.name', 'shipping.address.street', 'shipping.address.city',
                        'shipping.address.state', 'shipping.address.zip', 'shipping.method',
-                       'items', 'lens', 'status']
+                       'shipping.email', 'items', 'lens', 'status']
     default_values = {
         'status': u'pending',
         'lens': u'prescription',
@@ -122,6 +142,11 @@ class Order(Document):
         except (MongoValidationError, RequireFieldError):
             abort(400)
         return order._id
+
+    def create_shipment(self):
+        tracking_number = _get_tracking_number(self)
+        self.shipment.tracking_number = tracking_number
+        self.save()
 
     @staticmethod
     def from_id(_id):
@@ -153,7 +178,11 @@ def index_orders():
             abort(400)
         query['status'] = status
     return {
-        'orders': list(connection.Order.find(query)),
+        'orders': map(lambda order: dict(order, link={
+            'rel': 'child',
+            'title': 'Order #%s' % order._id,
+            'href': url_for('show_order', order_id=order._id)
+        }), connection.Order.find(query)),
         'links': [{
             'rel': 'self',
             'title': 'Self',
@@ -199,16 +228,47 @@ def show_order(order_id):
             'href': url_for('index_orders', _external=True),
                   },
                   {
-            'rel': 'updateStatus',
+            'rel': 'editStatus',
             'title': 'Update status',
-            'href': url_for('update_order_status', order_id=order_id, _external=True)
+            'href': url_for('edit_order_status', order_id=order_id, _external=True)
                   }
         ]
     }
 
+def _get_tracking_number(order):
+    return '123456789'
+
+def _print_shipping_label(order):
+    pass
+
+def _received_from_lab(order):
+    order.create_shipment()
+    _print_shipping_label(order)
+
+def _email_shipment_info(email, order):
+    pass
+
+def _notify_of_shipment(order):
+    _email_shipment_info(order.shipping.email, order)
+    order.status = 'notifiedOfShipment'
+    order.save()
+
+def _shipped(order):
+    _notify_of_shipment(order)
+
+def _triggerOn(order):
+    _triggers = {
+        'receivedFromLab': _received_from_lab,
+        'shipped': _shipped,
+    }
+    _triggers.get(order.status, lambda order: None)(order)
+
 @app.route('/orders/<objectid:order_id>/status', methods=['PUT'])
 def update_order_status(order_id):
-    status = request.form.get('status')
+    if request.json:
+        status = request.json['status']
+    else:
+        status = request.form.get('status')
     # connection.Order.collection.update({'_id': order_id}, {'$set': {'status': status}})
     doc = connection.Order.from_id(order_id)
     doc.status = status
@@ -216,7 +276,14 @@ def update_order_status(order_id):
         doc.save()
     except (MongoValidationError, RequireFieldError):
         abort(400)
-    return '', 201
+
+    _triggerOn(doc)
+
+    return redirect(url_for('show_order', order_id=order_id))
+
+@app.route('/orders/<objectid:order_id>/status/edit')
+def edit_order_status(order_id):
+    return render_template('edit_order_status.html', order=Order.from_id(order_id))
 
 if __name__ == '__main__':
     app.run(debug=True)

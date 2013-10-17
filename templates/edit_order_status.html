@@ -1,0 +1,15 @@
+<form method=POST action='{{ url_for('update_order_status', order_id=order._id) }}?__METHOD_OVERRIDE__=PUT'>
+    <label for=status>
+        Order status
+    </label>
+    <select name=status>
+        {% for status in order.stati %}
+            {% if status == order.status %}
+                <option selected>{{ status }}</option>
+            {% else %}
+                <option>{{ status }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <input type=submit value=Update />
+</form>

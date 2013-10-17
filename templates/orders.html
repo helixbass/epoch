@@ -1,7 +1,7 @@
 <ul>
     {% for order in orders %}
         <li>
-            <a href="{{ url_for('show_order', order_id=order._id) }}">
+            <a rel=child href="{{ url_for('show_order', order_id=order._id) }}">
                 Order #{{ order._id }}
             </a>
         </li>

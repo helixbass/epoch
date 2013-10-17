@@ -56,6 +56,7 @@ valid_order_data = {
             'zip': '12345'
         },
         'method': 'UPS Ground',
+        'email': 'joan@example.com',
     },
     'items': [{
         'name': 'classic',

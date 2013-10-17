@@ -10,10 +10,12 @@ Running the app
 - Create & activate a python virtualenv
 
 - Install the project's dependencies using e.g.:
+
         $ cd epoch
         $ pip install -e .
 
 - To run locally using Flask's builtin webserver:
+
         $ ./app.py
 
 - At this point <http://localhost:5000/> should be up as the "root" of the API (which redirects to `/orders`

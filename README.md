@@ -12,7 +12,7 @@ Installing the app
 - Install the project's dependencies using e.g.:
 
         $ cd epoch
-        $ pip install -e .
+        $ pip install -r requirements.txt
 
 Configuring the app
 -------------------

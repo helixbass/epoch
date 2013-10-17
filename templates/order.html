@@ -4,6 +4,113 @@
 <a rel='{{ edit_status_link['rel'] }}' href='{{ edit_status_link['href'] }}' title='{{ edit_status_link['title'] }}'>
     {{ order.status }}
 </a>
+<section id=billing>
+    <h2>
+        Billing Info
+    </h2>
+    <dl>
+        <dt>Name
+        <dd>{{ order.billing.name }}
+
+        <dt>Address
+        <dd>
+            <ol class=address>
+                <li class=street>{{ order.billing.address.street }}
+                <li class=city>{{ order.billing.address.city }}
+                <li class=state>{{ order.billing.address.state }}
+                <li class=zip>{{ order.billing.address.zip }}
+            </ol>
+
+        <dt>Payment info
+        <dd>
+            <ol>
+                <li class=type>{{ order.billing.ccinfo.type }}
+                <li class=number>{{ '*' * 12 + order.billing.ccinfo.number[12:] }}
+                <li class=expires>{{ order.billing.ccinfo.expires }}
+            </ol>
+</section>
+<section id=shipping>
+    <h2>
+        Shipping Info
+    </h2>
+    <dl>
+        <dt>Name
+        <dd>{{ order.shipping.name }}
+
+        <dt>Address
+        <dd>
+            <ol class=address>
+                <li class=street>{{ order.shipping.address.street }}
+                <li class=city>{{ order.shipping.address.city }}
+                <li class=state>{{ order.shipping.address.state }}
+                <li class=zip>{{ order.shipping.address.zip }}
+            </ol>
+
+        <dt>Email
+        <dd>{{ order.shipping.email }}
+
+        <dt>Method
+        <dd>{{ order.shipping.method }}
+    </dl>
+</section>
+{% if order.shipment.tracking_number %}
+    <dl id=shipment>
+        <dt>Tracking Number
+        <dd>{{ order.shipment.tracking_number }}
+    </dl>
+{% endif %}
+<section id=lensInfo>
+    <h2>
+        Lens Info
+    </h2>
+    <dl>
+        <dt>Type
+        <dd>{{ order.lens }}
+        {% if order.prescription %}
+            <dt>Prescription
+            <dd>{{ order.prescription }}
+        {% endif %}
+    </dl>
+</section>
+<section id=items>
+    <h2>
+        Purchased Items
+    </h2>
+    <table>
+        <tr>
+            <th>Item name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </tr>
+        {% for item in order['items'] %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</section>
+{% if order.discounts %}
+    <section id=discounts>
+        <h2>
+            Discounts
+        </h2>
+        <table>
+            <tr>
+                <th>Amount</th>
+                <th>Code</th>
+            </tr>
+            {% for discount in order.discounts %}
+                <tr>
+                    <td>{{ discount.amount }}</td>
+                    <td>{{ discount.code }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </section>
+{% endif %}
+
 <a rel='{{ parent_link['rel'] }}' href='{{ parent_link['href'] }}' title='{{ parent_link['title'] }}'>
     All orders
 </a>

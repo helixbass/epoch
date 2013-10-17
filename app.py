@@ -219,8 +219,7 @@ def show_order(order_id):
         'links': [{
             'rel': 'self',
             'title': 'Self',
-            'href': url_for('show_order',
-                            order_id=order_id),
+            'href': url_for('show_order', order_id=order_id, _external=True),
                   },
                   {
             'rel': 'parent',

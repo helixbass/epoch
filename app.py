@@ -6,6 +6,8 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from mimerender import FlaskMimeRender
 from datetime import datetime
+import os
+from urlparse import urlparse
 
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
@@ -31,8 +33,15 @@ except RuntimeError:
     pass
 app.url_map.converters['objectid'] = ObjectIDConverter
 
-app.connection = connection = Connection(app.config['MONGODB_HOST'],
-                                         app.config['MONGODB_PORT'])
+MONGOLAB_URI = os.environ.get('MONGOLAB_URI')
+if MONGOLAB_URI:
+    connection = Connection(MONGOLAB_URI)
+    __database__ = urlparse(MONGOLAB_URI).path[1:]
+else:
+    connection = Connection(app.config['MONGODB_HOST'],
+                            app.config['MONGODB_PORT'])
+    __database__ = app.config['MONGODB_DATABASE']
+app.connection = connection
 
 @app.route('/')
 def index():
@@ -58,7 +67,7 @@ class Order(Document):
              u'shipped', u'notifiedOfShipment')
 
     __collection__ = 'orders'
-    __database__ = app.config['MONGODB_DATABASE']
+    __database__ = __database__
 
     structure = {
         'billing': {

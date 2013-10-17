@@ -23,7 +23,10 @@ Running the app
 Running the tests
 -----------------
 
-To run the tests in `test_app.py` just run (at the command line, from the `epoch/` directory) `py.test` (which should have been installed as a dependency)
+The test suite (in `test_app.py`) uses `py.test`, which should have been installed (into the virtualenv) as a dependency. To run the tests:
+
+    $ cd epoch
+    $ py.test
 
 API endpoints
 -------------

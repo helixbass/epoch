@@ -1,7 +1,11 @@
 import app as ap
-from flask import url_for
+from flask import url_for, json
 from pytest import fixture, raises, mark
 import re
+from copy import deepcopy
+
+def _json(resp):
+    return json.loads(resp.data)
 
 @fixture(scope='module')
 def app(request):
@@ -20,24 +24,81 @@ def reset_db(app):
 
 @mark.usefixtures('reset_db')
 def test_orders_initially_empty(app):
-    assert '<li>' not in app.get('/orders').data
+    assert len(_json(app.get('/orders'))['orders']) == 0
+
+def _bad(response):
+    assert '400' in response.status
+
+def test_invalid_status_query(app):
+    _bad(app.get('/orders?status=INVALID_STATUS'))
+
+valid_order_data = {
+    'billing': {
+        'name': 'John Doze Jr.',
+        'address': {
+            'street': '123 Pleasant Rd.',
+            'city': 'Someville',
+            'state': 'MA',
+            'zip': '12345'
+        },
+        'ccinfo': {
+            'type': 'Visa',
+            'number': '1111222233334444',
+            'expires': '10/2020',
+        },
+    },
+    'shipping': {
+        'name': 'Joan Doze',
+        'address': {
+            'street': '123 Pleasant Rd.',
+            'city': 'Someville',
+            'state': 'MA',
+            'zip': '12345'
+        },
+        'method': 'UPS Ground',
+    },
+    'items': [{
+        'name': 'classic',
+        'price': 7500,
+        'quantity': 1,
+    }],
+    'discounts': [{
+        'code': '10OFF',
+        'amount': 10,
+    }],
+    'lens': 'prescription',
+    'prescription': '4.5/3.5',
+}
+
+def _post_order(data, app):
+    return app.post('/orders', data=json.dumps(data), headers={ 'Content-type': 'application/json' })
 
 class TestOrder(object):
+
     @fixture(autouse=True)
     def created_order_id(self, app):
-        resp = app.post('/orders', data={ 'name': 'Test Order' })
+        resp = _post_order(valid_order_data, app)
         return re.search(r'''href=.+/([^/]+)['"]''', resp.data).group(1)
 
     def test_creates_order(self, app):
-        assert '<li>' in app.get('/orders').data
+        assert len(_json(app.get('/orders'))['orders']) == 1
 
-    def test_initial_pending_status(self, app, created_order_id):
-        assert 'pending' in app.get('/orders/%s' % created_order_id).data
+    def test_initial_sentToLab_status(self, app, created_order_id):
+        assert 'sentToLab' in app.get('/orders/%s' % created_order_id).data
 
     def test_update_status(self, app, created_order_id):
-        app.put('/orders/%s/status' % created_order_id, data={ 'orderStatus': 'sentToLab' })
+        app.put('/orders/%s/status' % created_order_id, data={ 'status': 'sentToLab' })
         assert 'sentToLab' in app.get('/orders/%s' % created_order_id).data
 
     def test_unknown_status_fails(self, app, created_order_id):
-        response = app.put('/orders/%s/status' % created_order_id, data={ 'orderStatus': 'INVALID' })
-        assert '400' in response.status
+        _bad(app.put('/orders/%s/status' % created_order_id, data={ 'status': 'INVALID' }))
+
+class TestMalformedOrders(object):
+
+    def test_no_items(self, app):
+        _bad(_post_order(dict(valid_order_data, items=[]), app))
+
+    def test_no_shipping_address(self, app):
+        data = deepcopy(valid_order_data)
+        del data['shipping']['address']
+        _bad(_post_order(data, app))

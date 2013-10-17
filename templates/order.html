@@ -1,7 +1,9 @@
-order #{{ order._id }}:
-<a rel=self href='{{ url_for('show_order', order_id=order._id, _external=True) }}'>
-    {{ order.name }}
-</a>
-<span class=status>
+{% set self_link, parent_link, update_status_link = links %}
+<a rel='{{ self_link['rel'] }}' href='{{ self_link['href'] }}' title='{{ self_link['title'] }}'>
+    Order #{{ order._id }}</a>:
+<a rel='{{ update_status_link['rel'] }}' href='{{ update_status_link['href'] }}' title='{{ update_status_link['title'] }}'>
     {{ order.status }}
-</span>
+</a>
+<a rel='{{ parent_link['rel'] }}' href='{{ parent_link['href'] }}' title='{{ parent_link['title'] }}'>
+    All orders
+</a>

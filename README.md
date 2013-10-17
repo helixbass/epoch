@@ -45,5 +45,6 @@ There is no HTML form to create a new order, you must send JSON, e.g. the `valid
     $ cd epoch
     $ python
     >>> import requests
+    >>> from flask import json
     >>> from test_app import valid_order_data
     >>> requests.post( 'http://localhost:5000/orders', data=json.dumps(valid_order_data), headers={'Content-type': 'application/json'})

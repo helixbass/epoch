@@ -25,7 +25,7 @@ If MongoDB is running somewhere other than `localhost:27017` you can override `M
         $ cat local.cfg
         MONGODB_HOST = 'mongo.example.com'
         MONGODB_PORT = 12345
-        $ EPOCH_CONFIG=local.cfg ./app.py
+        $ EPOCH_CONFIG=local.cfg python app.py
 
 You can also similarly override `MONGODB_DATABASE` if you don't want to use the default (`epoch`)
 
@@ -34,7 +34,7 @@ Running the app
 
 - To run locally using Flask's builtin webserver:
 
-        $ ./app.py
+        $ python app.py
 
 - At this point <http://localhost:5000/> should be up as the "root" of the API (which redirects to `/orders`)
 

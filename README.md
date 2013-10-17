@@ -2,6 +2,18 @@ Prerequisites
 -------------
 Requires MongoDB to be installed & running
 
+Installing the app
+------------------
+
+- Clone the `helixbass/epoch` Github repository
+
+- Create & activate a python virtualenv
+
+- Install the project's dependencies using e.g.:
+
+        $ cd epoch
+        $ pip install -e .
+
 Configuring the app
 -------------------
 
@@ -16,15 +28,6 @@ You can also similarly override `MONGODB_DATABASE` if you don't want to use the 
 
 Running the app
 ---------------
-
-- Clone the `helixbass/epoch` Github repository
-
-- Create & activate a python virtualenv
-
-- Install the project's dependencies using e.g.:
-
-        $ cd epoch
-        $ pip install -e .
 
 - To run locally using Flask's builtin webserver:
 

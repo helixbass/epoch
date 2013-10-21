@@ -22,7 +22,10 @@ class ObjectIDConverter(BaseConverter):
         try:
             return ObjectId(base64_decode(value))
         except (InvalidId, ValueError, TypeError):
-            raise ValidationError()
+            try:
+                return ObjectId(value)
+            except (InvalidId, ValueError, TypeError):
+                raise ValidationError()
     def to_url(self, value):
         return base64_encode(value.binary)
 
@@ -278,7 +281,8 @@ def update_order_status(order_id):
 
     _triggerOn(doc)
 
-    return redirect(url_for('show_order', order_id=order_id))
+    # return redirect(url_for('show_order', order_id=order_id))
+    return '', 201
 
 @app.route('/orders/<objectid:order_id>/status/edit')
 def edit_order_status(order_id):

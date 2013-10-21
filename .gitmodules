@@ -1,0 +1,3 @@
+[submodule "static/backbonym"]
+	path = static/backbonym
+	url = https://github.com/helixbass/backbonym
